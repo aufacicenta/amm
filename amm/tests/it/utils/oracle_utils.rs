@@ -1,8 +1,19 @@
 use crate::utils::*;
+use oracle::Requester;
 use oracle::oracle_config::OracleConfig;
+use oracle::fee_config::FeeConfig;
 
 pub struct OracleUtils {
     pub contract: ContractAccount<OracleContract>
+}
+
+fn new_registry_entry(contract_id: String) -> Requester {
+    Requester {
+        code_base_url: None,
+        account_id: contract_id,
+        contract_name: "test".to_string(),
+        stake_multiplier: None
+    }
 }
 
 impl OracleUtils {
@@ -10,14 +21,18 @@ impl OracleUtils {
         let config = OracleConfig {
             gov: "alice".to_string(),
             final_arbitrator: "alice".to_string(),
-            bond_token: TOKEN_CONTRACT_ID.to_string(),
+            payment_token: TOKEN_CONTRACT_ID.to_string(),
             stake_token: TOKEN_CONTRACT_ID.to_string(),
             validity_bond: U128(100),
             max_outcomes: 8,
             default_challenge_window_duration: U64(1000),
             min_initial_challenge_window_duration: U64(1000),
             final_arbitrator_invoke_amount: U128(250),
-            resolution_fee_percentage: 10_000,
+            fee: FeeConfig {
+                flux_market_cap: U128(50000),
+                total_value_staked: U128(10000),
+                resolution_fee_percentage: 5000, // 5%
+            }
         };
 
         // deploy token
@@ -34,10 +49,9 @@ impl OracleUtils {
             // init method
             init_method: new(
                 Some(vec![
-                    "amm".to_string().try_into().expect("invalid acc id"), 
-                    "alice".to_string().try_into().expect("invalid acc id")
-                    ]
-                ), 
+                    new_registry_entry("amm".to_string()),
+                    new_registry_entry("alice".to_string()),
+                ]), 
                 config
             )
         );

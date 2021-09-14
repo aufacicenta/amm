@@ -1,7 +1,6 @@
 #![allow(clippy::needless_pass_by_value)]
 use std::convert::TryInto;
 use near_sdk::{
-    PendingContractTx,
     AccountId,
     json_types::{
         U64,
@@ -47,10 +46,10 @@ pub const ORACLE_CONTRACT_ID: &str = "oracle";
 pub const SAFE_STORAGE_AMOUNT: u128 = 1250000000000000000000;
 
 // Load in contract bytes
-near_sdk_sim::lazy_static! {
-    static ref ORACLE_WASM_BYTES: &'static [u8] = include_bytes!("../../../../res/oracle.wasm").as_ref();
-    static ref AMM_WASM_BYTES: &'static [u8] = include_bytes!("../../../../res/amm.wasm").as_ref();
-    static ref TOKEN_WASM_BYTES: &'static [u8] = include_bytes!("../../../../res/token.wasm").as_ref();
+near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
+    ORACLE_WASM_BYTES => "../res/oracle.wasm",
+    AMM_WASM_BYTES => "../res/amm.wasm",
+    TOKEN_WASM_BYTES => "../res/token.wasm"
 }
 
 pub struct TestUtils {
