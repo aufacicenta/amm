@@ -8,18 +8,18 @@ use crate::helper::flatten_outcome_tags;
 #[ext_contract(ext_self)]
 trait ProtocolResolver {
     fn proceed_market_enabling(market_id: U64) -> Promise;
-    fn proceed_datarequest_creation(&mut self, sender: AccountId, bond_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise;
+    fn proceed_datarequest_creation(&mut self, sender: AccountId, payment_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise;
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct OracleConfig {
-    pub bond_token: AccountId, // bond token from the oracle config
+    pub payment_token: AccountId, // bond token from the oracle config
     pub validity_bond: U128 // validity bond amount
 }
 
 #[near_bindgen]
 impl AMMContract {
-    pub fn proceed_datarequest_creation(&mut self, sender: AccountId, bond_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise {
+    pub fn proceed_datarequest_creation(&mut self, sender: AccountId, payment_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise {
         assert_self();
         assert_prev_promise_successful();
 
@@ -39,8 +39,8 @@ impl AMMContract {
         let validity_bond: u128 = oracle_config.validity_bond.into();
         let bond_in: u128 = bond_in.into();
 
-        assert_eq!(oracle_config.bond_token, bond_token, "ERR_INVALID_BOND_TOKEN");
-        assert!(validity_bond <= bond_in, "ERR_NOT_ENOUGH_BOND");
+        assert_eq!(oracle_config.payment_token, payment_token, "ERR_INVALID_PAYMENT_TOKEN");
+        assert!(validity_bond <= bond_in, "ERR_NOT_ENOUGH_BOND: FOUND {}, NEED {}", bond_in, validity_bond);
 
         let outcomes: Option<Vec<String>> = if market_args.is_scalar {
             None
@@ -55,10 +55,9 @@ impl AMMContract {
         };
 
         let remaining_bond: u128 = bond_in - validity_bond;
-        let create_promise = self.create_data_request(&bond_token, validity_bond, DataRequestArgs {
+        let create_promise = self.create_data_request(&payment_token, validity_bond, DataRequestArgs {
             description: format!("{} - {}", market_args.description, market_args.extra_info),
             outcomes,
-            settlement_time: ms_to_ns(market_args.resolution_time.into()),
             tags: vec![market_id.0.to_string()],
             sources: market_args.sources,
             challenge_period: market_args.challenge_period,
@@ -69,7 +68,7 @@ impl AMMContract {
         // Refund the remaining tokens
         if remaining_bond > 0 {
             create_promise
-                .then(fungible_token::fungible_token_transfer(&bond_token, sender, remaining_bond))
+                .then(fungible_token::fungible_token_transfer(&payment_token, sender, remaining_bond))
                 // We trigger the proceeding last so we can check the promise for failures
                 .then(ext_self::proceed_market_enabling(market_id, &env::current_account_id(), 0, 25_000_000_000_000))
         } else {
