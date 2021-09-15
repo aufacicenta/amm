@@ -17,12 +17,12 @@ pub enum DataRequestDataType {
     String,
 }
 
-pub struct DataRequestArgs {
+pub struct NewDataRequestArgs {
+    pub sources: Option<Vec<Source>>,
+    pub tags: Option<Vec<String>>,
+    pub description: Option<String>,
     pub outcomes: Option<Vec<String>>,
-    pub description: String,
-    pub tags: Vec<String>,
-    pub sources: Vec<Source>,
-    pub challenge_period: U64,
+    pub challenge_period: WrappedTimestamp,
     pub data_type: DataRequestDataType,
     pub creator: AccountId,
 }
@@ -30,7 +30,7 @@ pub struct DataRequestArgs {
 const GAS_BASE_CREATE_REQUEST: Gas = 50_000_000_000_000;
 
 impl AMMContract {
-    pub fn create_data_request(&self, payment_token: &AccountId, amount: Balance, request_args: DataRequestArgs) -> Promise {
+    pub fn create_data_request(&self, payment_token: &AccountId, amount: Balance, request_args: NewDataRequestArgs) -> Promise {
         // Should do a fungible token transfer to the oracle
         fungible_token::fungible_token_transfer_call(
             payment_token, 
@@ -40,7 +40,6 @@ impl AMMContract {
                 "NewDataRequest": {
                     // 12 hours in nano seconds
                     "challenge_period": request_args.challenge_period,
-                    "target_contract": env::current_account_id(),
                     "outcomes": request_args.outcomes,
                     "sources": request_args.sources,
                     "description": request_args.description,

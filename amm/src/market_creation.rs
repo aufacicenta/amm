@@ -1,7 +1,7 @@
 use crate::*;
 use near_sdk::{ PromiseResult, serde_json };
 use near_sdk::serde::{ Serialize, Deserialize };
-use crate::oracle::{ DataRequestArgs, DataRequestDataType };
+use crate::oracle::{ NewDataRequestArgs, DataRequestDataType };
 use crate::market::{ OutcomeTag, NumberOutcomeTag };
 use crate::helper::flatten_outcome_tags;
 
@@ -55,11 +55,11 @@ impl AMMContract {
         };
 
         let remaining_bond: u128 = bond_in - validity_bond;
-        let create_promise = self.create_data_request(&payment_token, validity_bond, DataRequestArgs {
-            description: format!("{} - {}", market_args.description, market_args.extra_info),
+        let create_promise = self.create_data_request(&payment_token, validity_bond, NewDataRequestArgs {
+            description: Some(format!("{} - {}", market_args.description, market_args.extra_info)),
             outcomes,
-            tags: vec![market_id.0.to_string()],
-            sources: market_args.sources,
+            tags: Some(vec![market_id.0.to_string()]),
+            sources: Some(market_args.sources),
             challenge_period: market_args.challenge_period,
             data_type,
             creator: sender.to_string(),
