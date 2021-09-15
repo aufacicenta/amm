@@ -83,12 +83,7 @@ impl AMMContract {
 
         match env::promise_result(0) {
             PromiseResult::NotReady => unreachable!(),
-            PromiseResult::Successful(value) => {
-                match serde_json::from_slice::<U128>(&value) {
-                    Ok(value) => assert_ne!(value.0, 0, "ERR_DATA_REQUEST_FAILED"),
-                    Err(_e) => panic!("ERR_DATA_REQUEST_FAILED"),
-                }
-            },
+            PromiseResult::Successful(_value) => (),
             PromiseResult::Failed => panic!("ERR_DATA_REQUEST_FAILED"),
         };
         
