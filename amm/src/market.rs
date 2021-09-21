@@ -338,14 +338,13 @@ impl AMMContract {
         logger::log_market_status(&market);
     }
 
-    pub fn set_outcome(&mut self, requestor: AccountId, outcome: Outcome, tags: Option<Vec<U64>>) {
+    pub fn set_outcome(&mut self, requestor: AccountId, outcome: Outcome, tags: Vec<String>) {
         self.assert_oracle();
         assert_eq!(requestor, env::current_account_id(), "ERR_WRONG_REQUESTOR");
 
         // First item in the tag is our market id as defined in market_creation.rs
-        let parsed_tags = tags.unwrap();
-        let market_id = parsed_tags.get(0).unwrap();
-        let mut market = self.get_market_expect(*market_id);
+        let market_id: u64 = tags.get(0).unwrap().parse().unwrap(); // cast string to u64
+        let mut market = self.get_market_expect(U64(market_id));
 
         match outcome {
             Outcome::Answer(answer) => {
@@ -432,7 +431,7 @@ impl AMMContract {
         }
 
         market.finalized = true;
-        self.markets.replace(market_id.0, &market);
+        self.markets.replace(market_id, &market);
         logger::log_market_status(&market);
     }
 
@@ -754,7 +753,7 @@ mod market_basic_tests {
             }
         );
 
-        contract.set_outcome(alice(), Outcome::Invalid, Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Invalid, vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
 
@@ -795,7 +794,7 @@ mod market_basic_tests {
             }
         );
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::String("NO".to_string())), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::String("NO".to_string())), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -841,7 +840,7 @@ mod market_basic_tests {
             value: U128(0),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -887,7 +886,7 @@ mod market_basic_tests {
             value: U128(15),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -933,7 +932,7 @@ mod market_basic_tests {
             value: U128(25),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -979,7 +978,7 @@ mod market_basic_tests {
             value: U128(175),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1025,7 +1024,7 @@ mod market_basic_tests {
             value: U128(175),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1071,7 +1070,7 @@ mod market_basic_tests {
             value: U128(201),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1117,7 +1116,7 @@ mod market_basic_tests {
             value: U128(70369216342),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1163,7 +1162,7 @@ mod market_basic_tests {
             value: U128(268),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1210,7 +1209,7 @@ mod market_basic_tests {
             value: U128(250),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1257,7 +1256,7 @@ mod market_basic_tests {
             value: U128(24),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1303,7 +1302,7 @@ mod market_basic_tests {
             value: U128(55),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1349,7 +1348,7 @@ mod market_basic_tests {
             value: U128(55),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
@@ -1395,7 +1394,7 @@ mod market_basic_tests {
             value: U128(49),
         };
 
-        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), Some(vec![U64(0)]));
+        contract.set_outcome(alice(), Outcome::Answer(AnswerType::Number(answer_number)), vec!["0".to_string()]);
 
         let market = contract.get_market_expect(U64(0));
         assert!(market.finalized, "Market should be finalized");
