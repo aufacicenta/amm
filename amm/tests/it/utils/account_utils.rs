@@ -54,7 +54,7 @@ impl TestAccount {
         };
 
         let res: U128 = self.account.view(
-            TOKEN_CONTRACT_ID.to_string(),
+            AMM_CONTRACT_ID.to_string(),
             "get_pool_token_balance",
             json!({
                 "market_id": U64(market_id),
