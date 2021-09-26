@@ -9,7 +9,7 @@ fn test_valid_market_resolution() {
     // variables
     let market_id = 0;
 
-    test_utils.alice.create_market(2, Some(U128(0)));
+    let _create_market = test_utils.alice.create_market(2, Some(U128(0)));
     let target_price = to_yocto("5") / 10;
     let seed_amount = to_yocto("100");
     let weights = Some(calc_weights_from_price(vec![target_price, target_price]));
@@ -19,6 +19,10 @@ fn test_valid_market_resolution() {
     let payout_num = vec![U128(0), U128(to_yocto("1"))];
     
     test_utils.carol.resolute_market(market_id, Some(payout_num));
+
+    // println!("Promise results: {:#?}", create_market.promise_results());
+    // println!("Receipt results: {:#?}", create_market.get_receipt_results());
+    // println!("Logs: {:#?}", create_market.logs());
 }
 
 #[test]

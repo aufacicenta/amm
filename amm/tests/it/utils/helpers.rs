@@ -1,4 +1,5 @@
 use crate::utils::*;
+use amm::types::AnswerType;
 
 pub fn carol() -> AccountId {
     "carol".to_string()
@@ -10,6 +11,15 @@ pub fn empty_string_vec(len: u16) -> Vec<String> {
     let mut tags: Vec<String> = vec![];
     for _i in 0..len {
         tags.push(empty_string());
+    }
+    
+    tags
+}
+
+pub fn outcome_string_vec(len: u16) -> Vec<AnswerType> { 
+    let mut tags: Vec<AnswerType> = vec![];
+    for _i in 0..len {
+        tags.push(AnswerType::String(empty_string()))
     }
     
     tags

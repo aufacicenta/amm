@@ -175,7 +175,7 @@ impl TestAccount {
                 "description": empty_string(),
                 "extra_info": empty_string(),
                 "outcomes": outcomes,
-                "outcome_tags": empty_string_vec(outcomes),
+                "outcome_tags": outcome_string_vec(outcomes),
                 "categories": empty_string_vec(outcomes),
                 "end_time": env_time(),
                 "sources": vec![Source {
