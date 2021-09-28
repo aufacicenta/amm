@@ -24,6 +24,11 @@ pub struct Market {
     pub enabled: bool, // If false the market is disabled for interaction.
     pub is_scalar: bool, // If true the market is scalar, false for categorical
     pub scalar_multiplier: Option<U128>, // multiplier used for float numbers
+    pub data_request_finalized: bool, // false until set_outcome() is called by oracle
+    pub challenge_period: U64,
+    pub sources: Vec<Source>,
+    pub description: String, // Description of market
+    pub extra_info: String, // Details that help with market resolution
 }
 
 #[near_bindgen]
@@ -316,11 +321,19 @@ impl AMMContract {
         market_id: U64,
         payout_numerator: Option<Vec<U128>>
     ) {
-        self.assert_gov();
         // let initial_storage = env::storage_usage();
         let mut market = self.markets.get(market_id.into()).expect("ERR_NO_MARKET");
         assert!(market.enabled, "ERR_DISABLED_MARKET");
         assert!(!market.finalized, "ERR_IS_FINALIZED");
+        
+        // if payout_numerator is Some, then assert this call is coming from governance
+        // otherwise, allow anyone to resolute a market only if the outcome has been set by the oracle
+        if payout_numerator.is_some() {
+            self.assert_gov();
+        } else {
+            assert!(market.data_request_finalized, "ERR_DATA_REQUEST_NOT_FINALIZED");
+        }
+
         match &payout_numerator {
             Some(v) => {
                 let sum = v.iter().fold(0, |s, &n| s + u128::from(n));
@@ -430,7 +443,7 @@ impl AMMContract {
             Outcome::Invalid => market.payout_numerator = None,
         }
 
-        market.finalized = true;
+        market.data_request_finalized = true;
         self.markets.replace(market_id, &market);
         logger::log_market_status(&market);
     }

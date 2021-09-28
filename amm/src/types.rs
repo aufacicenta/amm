@@ -24,7 +24,7 @@ pub enum Outcome {
     Invalid
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Deserialize, Serialize)]
+#[derive(BorshSerialize, BorshDeserialize, Deserialize, Serialize, Clone)]
 pub struct Source {
     pub end_point: String,
     pub source_path: String

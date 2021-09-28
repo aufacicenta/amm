@@ -5,96 +5,6 @@ use crate::oracle::{ NewDataRequestArgs, DataRequestDataType };
 use crate::market::{ OutcomeTag, NumberOutcomeTag };
 use crate::helper::flatten_outcome_tags;
 
-#[ext_contract(ext_self)]
-trait ProtocolResolver {
-    fn proceed_market_enabling(market_id: U64) -> Promise;
-    fn proceed_datarequest_creation(&mut self, sender: AccountId, payment_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise;
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct OracleConfig {
-    pub payment_token: AccountId, // bond token from the oracle config
-    pub validity_bond: U128 // validity bond amount
-}
-
-#[near_bindgen]
-impl AMMContract {
-    pub fn proceed_datarequest_creation(&mut self, sender: AccountId, payment_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise {
-        assert_self();
-        assert_prev_promise_successful();
-
-        // Maybe we don't need to check. We could also assume that
-        // the oracle promise handles the validation..
-        let oracle_config = match env::promise_result(0) {
-            PromiseResult::NotReady => unreachable!(),
-            PromiseResult::Successful(value) => {
-                match serde_json::from_slice::<OracleConfig>(&value) {
-                    Ok(value) => value,
-                    Err(_e) => panic!("ERR_INVALID_ORACLE_CONFIG"),
-                }
-            },
-            PromiseResult::Failed => panic!("ERR_FAILED_ORACLE_CONFIG_FETCH"),
-        };
-        
-        let validity_bond: u128 = oracle_config.validity_bond.into();
-        let bond_in: u128 = bond_in.into();
-
-        assert_eq!(oracle_config.payment_token, payment_token, "ERR_INVALID_PAYMENT_TOKEN");
-        assert!(validity_bond <= bond_in, "ERR_NOT_ENOUGH_BOND: FOUND {}, NEED {}", bond_in, validity_bond);
-
-        let outcomes: Option<Vec<String>> = if market_args.is_scalar {
-            None
-        } else {
-            Some(flatten_outcome_tags(&market_args.outcome_tags))
-        };
-
-        let data_type: DataRequestDataType = if market_args.is_scalar {
-            DataRequestDataType::Number(market_args.scalar_multiplier.unwrap())
-        } else {
-            DataRequestDataType::String
-        };
-
-        let remaining_bond: u128 = bond_in - validity_bond;
-        let create_promise = self.create_data_request(&payment_token, validity_bond, NewDataRequestArgs {
-            description: Some(format!("{} - {}", market_args.description, market_args.extra_info)),
-            outcomes,
-            tags: Some(vec![market_id.0.to_string()]),
-            sources: Some(market_args.sources),
-            challenge_period: market_args.challenge_period,
-            data_type,
-            creator: sender.to_string(),
-        });
-        
-        // Refund the remaining tokens
-        if remaining_bond > 0 {
-            create_promise
-                .then(fungible_token::fungible_token_transfer(&payment_token, sender, remaining_bond))
-                // We trigger the proceeding last so we can check the promise for failures
-                .then(ext_self::proceed_market_enabling(market_id, &env::current_account_id(), 0, 25_000_000_000_000))
-        } else {
-            create_promise
-                .then(ext_self::proceed_market_enabling(market_id, &env::current_account_id(), 0, 25_000_000_000_000))
-        }
-    }
-
-    pub fn proceed_market_enabling(&mut self, market_id: U64) {
-        assert_self();
-        assert_prev_promise_successful();
-
-        match env::promise_result(0) {
-            PromiseResult::NotReady => unreachable!(),
-            PromiseResult::Successful(_value) => (),
-            PromiseResult::Failed => panic!("ERR_DATA_REQUEST_FAILED"),
-        };
-        
-        let mut market = self.get_market_expect(market_id);
-        market.enabled = true;
-        self.markets.replace(market_id.into(), &market);
-        logger::log_market_status(&market);
-    }
-}
-
-
 impl AMMContract {
     /**
      * @notice allows users to create new markets, can only be called internally
@@ -171,11 +81,15 @@ impl AMMContract {
             pool,
             payout_numerator: None,
             finalized: false,
-            // Disable this market until the oracle request has been made
-            enabled: false,
+            enabled: true,
             is_scalar: payload.is_scalar,
             outcome_tags: payload.outcome_tags.clone(),
             scalar_multiplier: payload.scalar_multiplier,
+            data_request_finalized: false,
+            challenge_period: payload.challenge_period,
+            description: payload.description.clone(),
+            extra_info: payload.extra_info.clone(),
+            sources: payload.sources.clone()
         };
 
         logger::log_create_market(&market, &payload.description, &payload.extra_info, &payload.categories);
@@ -190,22 +104,10 @@ impl AMMContract {
         sender: &AccountId, 
         bond_in: Balance, 
         payload: CreateMarketArgs
-    ) -> Promise {
+    ) -> PromiseOrValue<U128> {
         self.assert_unpaused();
         let market_id = self.create_market(&payload);
-        oracle::fetch_oracle_config(&self.oracle)
-            .then(
-                ext_self::proceed_datarequest_creation(
-                sender.to_string(), 
-                env::predecessor_account_id(), 
-                U128(bond_in), 
-                market_id,
-                payload, 
-                &env::current_account_id(), 
-                0, 
-                150_000_000_000_000
-            )
-        )
+        PromiseOrValue::Value(0.into())
     }
 }
 

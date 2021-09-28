@@ -40,11 +40,20 @@ pub struct BuyArgs {
     pub min_shares_out: WrappedBalance // the minimum amount of share tokens the user expects out, this is to prevent slippage
 }
 
+/**
+ * @notice `create_data_request` args
+ */
+#[derive(Serialize, Deserialize)]
+pub struct CreateDataRequestArgs {
+    pub market_id: U64, // id of the market that shares are to be purchased from
+}
+
 #[derive(Serialize, Deserialize)]
 pub enum Payload {
     BuyArgs(BuyArgs),
     AddLiquidityArgs(AddLiquidityArgs),
-    CreateMarketArgs(CreateMarketArgs)
+    CreateMarketArgs(CreateMarketArgs),
+    CreateDataRequestArgs(CreateDataRequestArgs),
 }
 
 pub trait FungibleTokenReceiver {
@@ -79,7 +88,8 @@ impl FungibleTokenReceiver for AMMContract {
         let res = match payload {
             Payload::BuyArgs(payload) => self.buy(&sender_id, amount, payload), 
             Payload::AddLiquidityArgs(payload) => self.add_liquidity(&sender_id, amount, payload),
-            Payload::CreateMarketArgs(payload) => self.ft_create_market_callback(&sender_id, amount, payload).into()
+            Payload::CreateMarketArgs(payload) => self.ft_create_market_callback(&sender_id, amount, payload).into(),
+            Payload::CreateDataRequestArgs(payload) => self.ft_create_data_request_callback(&sender_id, amount, payload).into()
         };
 
         self.use_storage(&sender_id, initial_storage_usage, account.available);
