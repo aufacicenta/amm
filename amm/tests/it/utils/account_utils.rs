@@ -1,5 +1,6 @@
 use crate::utils::*;
-use amm::types::Source;
+use amm::types::{Source, Outcome};
+use oracle::data_request::DataRequestSummary;
 
 const AMM_DEPOSIT: u128 = 50000000000000000000000;
 pub fn init_balance() -> u128 {
@@ -21,6 +22,7 @@ impl TestAccount {
                 storage_deposit(AMM_CONTRACT_ID, &master_account, AMM_DEPOSIT, Some(account.account_id()));
                 storage_deposit(TOKEN_CONTRACT_ID, &master_account, SAFE_STORAGE_AMOUNT, Some(account.account_id()));
                 storage_deposit(ORACLE_CONTRACT_ID, &master_account, SAFE_STORAGE_AMOUNT, Some(account.account_id()));
+                storage_deposit(ORACLE_CONTRACT_ID, &master_account, SAFE_STORAGE_AMOUNT, Some(carol()));
                 near_deposit(&account, init_balance() / 2);
                 Self {
                     account
@@ -168,7 +170,77 @@ impl TestAccount {
         wrapped_balance.into()
     }
 
-    /*** Setters ***/
+    /*** Oracle ***/
+    pub fn create_data_request(&self, market_id: u64) -> ExecutionResult {
+        let msg = json!({
+            "CreateDataRequestArgs": {
+                "market_id": U64(market_id),
+            }
+        }).to_string();
+        self.ft_transfer_call(AMM_CONTRACT_ID.to_string(), to_yocto("100"), msg)
+    }
+
+    pub fn dr_exists(&self, id: u64) -> bool {
+        self.account.view(
+            ORACLE_CONTRACT_ID.to_string(),
+            "dr_exists",
+            json!({
+                "id": U64(id)
+            }).to_string().as_bytes()
+        ).unwrap_json()
+    }
+
+    pub fn stake(
+        &self,
+        dr_id: u64, 
+        outcome: Outcome,
+        amount: u128
+    ) -> ExecutionResult {
+        let msg = json!({
+            "StakeDataRequest": {
+                "outcome": outcome,
+                "id": U64(dr_id)
+            }
+        }).to_string();
+        self.ft_transfer_call(ORACLE_CONTRACT_ID.to_string(), amount, msg)
+    }
+
+    pub fn finalize(
+        &self,
+        dr_id: u64
+    ) -> ExecutionResult {
+        self.account.call(
+            ORACLE_CONTRACT_ID.to_string(), 
+            "dr_finalize", 
+            json!({
+                "request_id": U64(dr_id)
+            }).to_string().as_bytes(),
+            DEFAULT_GAS,
+            0
+        )
+    }
+
+    pub fn get_outcome(&self, id: u64) -> Option<Outcome> {
+        self.account.call(
+            ORACLE_CONTRACT_ID.to_string(),
+            "get_outcome",
+            json!({
+                "dr_id": U64(id)
+            }).to_string().as_bytes(),
+            DEFAULT_GAS,
+            0
+        ).unwrap_json()
+    }
+
+    pub fn get_latest_request(&self) -> Option<DataRequestSummary> {
+        self.account.view(
+            ORACLE_CONTRACT_ID.to_string(), 
+            "get_latest_request", 
+            json!({}).to_string().as_bytes()
+        ).unwrap_json()
+    }
+    
+    /*** AMM Setters ***/
     pub fn create_market(&self, outcomes: u16, fee_opt: Option<U128>) -> ExecutionResult {
         let msg = json!({
             "CreateMarketArgs": {
@@ -272,7 +344,7 @@ impl TestAccount {
             DEFAULT_GAS,
             STORAGE_AMOUNT
         );
-        assert!(res.is_ok(), "redeem_collateral failed with res: {:?}", res);
+        assert!(res.is_ok(), "resolute_market failed with res: {:?}", res);
         res
     }
 

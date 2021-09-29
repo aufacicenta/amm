@@ -1,6 +1,7 @@
 use crate::utils::*;
 use near_sdk::json_types::{U128};
 use near_sdk_sim::{to_yocto};
+use amm::types::{Outcome, AnswerType};
 
 #[test]
 fn test_valid_market_resolution() {
@@ -8,21 +9,54 @@ fn test_valid_market_resolution() {
     
     // variables
     let market_id = 0;
-
+    
     let _create_market = test_utils.alice.create_market(2, Some(U128(0)));
     let target_price = to_yocto("5") / 10;
     let seed_amount = to_yocto("100");
     let weights = Some(calc_weights_from_price(vec![target_price, target_price]));
     
     test_utils.alice.add_liquidity(market_id, seed_amount, weights);
-
+    
     let payout_num = vec![U128(0), U128(to_yocto("1"))];
     
     test_utils.carol.resolute_market(market_id, Some(payout_num));
-
+    
     // println!("Promise results: {:#?}", create_market.promise_results());
     // println!("Receipt results: {:#?}", create_market.get_receipt_results());
     // println!("Logs: {:#?}", create_market.logs());
+}
+
+#[test]
+fn test_valid_market_resolution_oracle() {
+    let test_utils = TestUtils::init(carol());
+    
+    // variables
+    let market_id = 0;
+    
+    // create market and data request
+    test_utils.alice.create_market(2, Some(U128(0)));
+    test_utils.alice.create_data_request(market_id);
+    
+    // check if the dr exists
+    let dr_exist = test_utils.alice.dr_exists(0);
+    assert!(dr_exist, "something went wrong during dr creation");
+    
+    let target_price = to_yocto("5") / 10;
+    let seed_amount = to_yocto("100");
+    let weights = Some(calc_weights_from_price(vec![target_price, target_price]));
+    
+    test_utils.alice.add_liquidity(market_id, seed_amount, weights);
+    
+    // stake on and finalize data request on oracle
+    let outcome_to_stake = Outcome::Answer(AnswerType::String(empty_string()));
+    test_utils.carol.stake(0, outcome_to_stake.clone(), 200);
+    // println!("Bonded outcome: {:?}", test_utils.alice.get_latest_request().unwrap().resolution_windows[0].bonded_outcome);
+
+    let finalize_res = test_utils.alice.finalize(0);
+    println!("Finalize promise results: {:#?}", finalize_res.promise_results());
+    
+    // resolute market on amm
+    test_utils.carol.resolute_market(market_id, None);
 }
 
 #[test]

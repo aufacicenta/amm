@@ -26,7 +26,7 @@ pub fn outcome_string_vec(len: u16) -> Vec<AnswerType> {
 }
 
 pub fn env_time() -> U64{ 
-    1609951265967.into()
+    76000000000.into()
 }
 
 pub fn fee() -> U128 {
