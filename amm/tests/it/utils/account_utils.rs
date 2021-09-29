@@ -220,18 +220,6 @@ impl TestAccount {
         )
     }
 
-    pub fn get_outcome(&self, id: u64) -> Option<Outcome> {
-        self.account.call(
-            ORACLE_CONTRACT_ID.to_string(),
-            "get_outcome",
-            json!({
-                "dr_id": U64(id)
-            }).to_string().as_bytes(),
-            DEFAULT_GAS,
-            0
-        ).unwrap_json()
-    }
-
     pub fn get_latest_request(&self) -> Option<DataRequestSummary> {
         self.account.view(
             ORACLE_CONTRACT_ID.to_string(), 

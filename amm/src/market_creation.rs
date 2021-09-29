@@ -1,9 +1,5 @@
 use crate::*;
-use near_sdk::{ PromiseResult, serde_json };
-use near_sdk::serde::{ Serialize, Deserialize };
-use crate::oracle::{ NewDataRequestArgs, DataRequestDataType };
 use crate::market::{ OutcomeTag, NumberOutcomeTag };
-use crate::helper::flatten_outcome_tags;
 
 impl AMMContract {
     /**
@@ -21,7 +17,7 @@ impl AMMContract {
      * @param is_scalar if the market is a scalar market (range)
      * @returns wrapped `market_id` 
      */
-    pub fn create_market(&mut self, payload: &CreateMarketArgs) -> U64 {
+    pub fn create_market(&mut self, payload: &CreateMarketArgs, sender: &AccountId) -> U64 {
         self.assert_unpaused();
         let swap_fee: u128 = payload.swap_fee.into();
         let market_id = self.markets.len();
@@ -89,10 +85,10 @@ impl AMMContract {
             challenge_period: payload.challenge_period,
             description: payload.description.clone(),
             extra_info: payload.extra_info.clone(),
-            sources: payload.sources.clone()
+            sources: payload.sources.clone(),
         };
 
-        logger::log_create_market(&market, &payload.description, &payload.extra_info, &payload.categories);
+        logger::log_create_market(&market, &payload.description, &payload.extra_info, &payload.categories, sender);
         logger::log_market_status(&market);
 
         self.markets.push(&market);
@@ -102,11 +98,10 @@ impl AMMContract {
     pub fn ft_create_market_callback(
         &mut self, 
         sender: &AccountId, 
-        bond_in: Balance, 
         payload: CreateMarketArgs
     ) -> PromiseOrValue<U128> {
         self.assert_unpaused();
-        let market_id = self.create_market(&payload);
+        self.create_market(&payload, &sender);
         PromiseOrValue::Value(0.into())
     }
 }
@@ -143,14 +138,6 @@ mod market_basic_tests {
         let mut tags: Vec<String> = vec![];
         for _i in 0..len {
             tags.push(empty_string());
-        }
-        tags
-    }
-
-    fn empty_string_outcomes(len: u16) -> Vec<OutcomeTag> {
-        let mut tags: Vec<OutcomeTag> = vec![];
-        for _i in 0..len {
-            tags.push(OutcomeTag::String(empty_string()));
         }
         tags
     }
@@ -208,7 +195,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -243,7 +231,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -278,7 +267,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -313,7 +303,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -348,7 +339,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -383,7 +375,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -418,7 +411,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -453,7 +447,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -488,7 +483,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -522,7 +518,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -556,7 +553,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 
@@ -590,7 +588,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
     }
 }

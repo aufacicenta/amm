@@ -88,7 +88,7 @@ impl FungibleTokenReceiver for AMMContract {
         let res = match payload {
             Payload::BuyArgs(payload) => self.buy(&sender_id, amount, payload), 
             Payload::AddLiquidityArgs(payload) => self.add_liquidity(&sender_id, amount, payload),
-            Payload::CreateMarketArgs(payload) => self.ft_create_market_callback(&sender_id, amount, payload).into(),
+            Payload::CreateMarketArgs(payload) => self.ft_create_market_callback(&sender_id, payload).into(),
             Payload::CreateDataRequestArgs(payload) => self.ft_create_data_request_callback(&sender_id, amount, payload).into()
         };
 
@@ -194,7 +194,8 @@ mod mock_token_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false,
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
 
         let mut market = contract.get_market_expect(U64(0));
@@ -235,7 +236,8 @@ mod mock_token_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false,
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
 
         let mut market = contract.get_market_expect(U64(0));

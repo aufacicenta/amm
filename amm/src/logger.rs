@@ -196,6 +196,7 @@ pub fn log_create_market(
     description: &String,  
     extra_info: &String,  
     categories: &Vec<String>,
+    creator: &String,
 ) {
 	env::log(
 		json!({
@@ -216,6 +217,7 @@ pub fn log_create_market(
                 "enabled": market.enabled,
                 "is_scalar": market.is_scalar,
                 "scalar_multiplier": market.scalar_multiplier,
+                "creator": creator,
 			}
 		})
 		.to_string()

@@ -657,7 +657,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false, // is_scalar,
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
     }
 
@@ -687,7 +688,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false, // is_scalar
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
 
         let mut market = contract.get_market_expect(U64(0));
@@ -734,7 +736,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false, // is_scalar
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
     }
 
@@ -763,7 +766,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false, // is_scalar,
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
 
         contract.set_outcome(Outcome::Invalid, vec!["0".to_string()]);
@@ -804,7 +808,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false, // is_scalar,
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
 
         contract.set_outcome(Outcome::Answer(AnswerType::String("NO".to_string())), vec!["0".to_string()]);
@@ -844,7 +849,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -890,7 +896,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -936,7 +943,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -982,7 +990,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1028,7 +1037,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1074,7 +1084,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1120,7 +1131,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(100000000000)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1166,7 +1178,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1000)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1213,7 +1226,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(100)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1260,7 +1274,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1306,7 +1321,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1352,7 +1368,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1398,7 +1415,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: true, // is_scalar,
                 scalar_multiplier: Some(U128(1)),
-            }
+            },
+            &alice()
         );
 
         let answer_number = AnswerNumberType {
@@ -1491,7 +1509,8 @@ mod market_basic_tests {
                 challenge_period: U64(1),
                 is_scalar: false, // is_scalar
                 scalar_multiplier: None,
-            }
+            },
+            &alice()
         );
 
         testing_env!(get_context(token(), 0));

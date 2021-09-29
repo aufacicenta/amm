@@ -50,10 +50,10 @@ fn test_valid_market_resolution_oracle() {
     // stake on and finalize data request on oracle
     let outcome_to_stake = Outcome::Answer(AnswerType::String(empty_string()));
     test_utils.carol.stake(0, outcome_to_stake.clone(), 200);
-    // println!("Bonded outcome: {:?}", test_utils.alice.get_latest_request().unwrap().resolution_windows[0].bonded_outcome);
+    println!("Bonded outcome: {:?}", test_utils.alice.get_latest_request().unwrap().resolution_windows[0].bonded_outcome);
 
-    let finalize_res = test_utils.alice.finalize(0);
-    println!("Finalize promise results: {:#?}", finalize_res.promise_results());
+    let _finalize_res = test_utils.alice.finalize(0);
+    // println!("Finalize promise results: {:#?}", finalize_res.promise_results());
     
     // resolute market on amm
     test_utils.carol.resolute_market(market_id, None);
