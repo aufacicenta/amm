@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 near-sdk = { git = "https://github.com/near/near-sdk-rs.git", rev="249dacdcd3fd34bc00f0895a275f33f05cd910c1" }
-oracle = { git = "https://github.com/fluxprotocol/oracle-monorepo-near", rev="eded4e676339203f55ebb0457cc7dde5f5b98351" }
+oracle = { git = "https://github.com/fluxprotocol/oracle-monorepo-near", rev="25334af3525e2faa448856b7dc3cf190cad72cba" }
 uint = { version = "0.8.5", default-features = false }
 serde = "1.0.118"
 

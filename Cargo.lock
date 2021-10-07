@@ -2048,7 +2048,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 [[package]]
 name = "oracle"
 version = "0.1.0"
-source = "git+https://github.com/fluxprotocol/oracle-monorepo-near?rev=eded4e676339203f55ebb0457cc7dde5f5b98351#eded4e676339203f55ebb0457cc7dde5f5b98351"
+source = "git+https://github.com/fluxprotocol/oracle-monorepo-near?rev=25334af3525e2faa448856b7dc3cf190cad72cba#25334af3525e2faa448856b7dc3cf190cad72cba"
 dependencies = [
  "near-sdk 3.0.0-pre.3",
  "serde",
