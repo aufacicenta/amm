@@ -34,6 +34,7 @@ mod oracle;
 mod market_creation;
 mod fungible_token;
 mod storage_manager;
+mod upgrade;
 
 pub mod collateral_whitelist; // pub for integration tests 
 pub mod math; // pub for integration tests
