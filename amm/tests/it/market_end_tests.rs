@@ -24,12 +24,12 @@ fn test_valid_market_resolution_oracle() {
     
     test_utils.alice.add_liquidity(market_id, seed_amount, weights);
     
-    // stake on and finalize data request on oracle
+    // stake on oracle
     let outcome_to_stake = Outcome::Answer(AnswerType::String(empty_string()));
     test_utils.carol.stake(0, outcome_to_stake.clone(), 200);
     println!("Bonded outcome: {:?}", test_utils.alice.get_latest_request().unwrap().resolution_windows[0].bonded_outcome);
     
-    // resolute market on amm
+    // resolute market on oracle, amm
     test_utils.alice.finalize(0);
     test_utils.carol.resolute_market(market_id, None);
 }

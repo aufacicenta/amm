@@ -337,6 +337,17 @@ impl TestAccount {
     }
 
     pub fn claim_earnings(&self, market_id: u64) -> ExecutionResult {
+        // also claim earnings from oracle, if staked on data request (otherwise will return 0)
+        self.account.call(
+            ORACLE_CONTRACT_ID.to_string(), 
+            "dr_claim", 
+            json!({
+                "account_id": self.account.account_id(),
+                "request_id": U64(market_id)
+            }).to_string().as_bytes(),
+            DEFAULT_GAS,
+            STORAGE_AMOUNT
+        );
         let res = self.account.call(
             AMM_CONTRACT_ID.to_string(), 
             "claim_earnings", 

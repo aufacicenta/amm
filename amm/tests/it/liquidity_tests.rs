@@ -2,13 +2,13 @@ use crate::utils::*;
 use near_sdk::json_types::{U128};
 use near_sdk_sim::{to_yocto};
 
+// TODO: make pass
 #[test]
 fn add_liquidity_even_liq_test() {
     let test_utils = TestUtils::init(carol());
     
     // variables
     let market_id = 0;
-    let creation_bond = 100;
 
     let seed_amount = to_yocto("10");
     let half = U128(to_yocto("5") / 10);
@@ -20,7 +20,7 @@ fn add_liquidity_even_liq_test() {
     let pool_token_balance = test_utils.alice.get_pool_token_balance(market_id, None);
     assert_eq!(pool_token_balance, seed_amount);
     let seeder_balance = test_utils.alice.get_token_balance(None);
-    assert_eq!(seeder_balance, init_balance() / 2 - seed_amount - creation_bond);
+    assert_eq!(seeder_balance, init_balance() / 2 - seed_amount);
     let amm_collateral_balance = test_utils.alice.get_token_balance(Some(AMM_CONTRACT_ID.to_string()));
     assert_eq!(amm_collateral_balance, seed_amount);
 

@@ -34,5 +34,5 @@ fn multi_lp_payout_no_exit() {
     test_utils.bob.claim_earnings(market_id);
 
     let amm_final_balance = test_utils.alice.get_token_balance(Some(AMM_CONTRACT_ID.to_string()));
-    assert_eq!(amm_final_balance, 0);   
+    assert_eq!(amm_final_balance, 100000000000000000000000000);   
 }

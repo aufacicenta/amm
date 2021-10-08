@@ -1,6 +1,7 @@
 use crate::utils::*;
 use near_sdk::json_types::{U128};
 use near_sdk_sim::{to_yocto};
+use amm::types::{Outcome, AnswerType};
 
 #[test]
 fn test_uneven_lp_shares_solvency_tests() {
@@ -15,6 +16,7 @@ fn test_uneven_lp_shares_solvency_tests() {
     let weights = calc_weights_from_price(vec![weight_0, weight_1]);
     
     test_utils.alice.create_market(2, Some(U128(0)));
+    test_utils.alice.create_data_request(market_id);
     let alice_init_balance = test_utils.alice.get_token_balance(None);
     let bob_init_balance = test_utils.bob.get_token_balance(None);
     let carol_init_balance = test_utils.carol.get_token_balance(None);
@@ -25,8 +27,13 @@ fn test_uneven_lp_shares_solvency_tests() {
     test_utils.bob.buy(market_id, buy_amount, 0, 0);
     test_utils.carol.buy(market_id, buy_amount, 0, 0);
 
-    test_utils.alice.sell(market_id, to_yocto("25") / 100, 0, to_yocto("100")); 
+    test_utils.alice.sell(market_id, to_yocto("25") / 100, 0, to_yocto("100"));
 
+    let outcome_to_stake = Outcome::Answer(AnswerType::String(empty_string()));
+    test_utils.carol.stake(0, outcome_to_stake.clone(), 200);
+    println!("Bonded outcome: {:?}", test_utils.alice.get_latest_request().unwrap().resolution_windows[0].bonded_outcome);
+
+    test_utils.alice.finalize(0);
     test_utils.carol.resolute_market(market_id, None);
     test_utils.bob.claim_earnings(market_id);
     test_utils.carol.claim_earnings(market_id);
@@ -38,7 +45,7 @@ fn test_uneven_lp_shares_solvency_tests() {
     let amm_final_balance = test_utils.alice.get_token_balance(Some(AMM_CONTRACT_ID.to_string()));
         
     // Assert that all balances are back to where they started
-    assert_eq!(alice_final_balance, alice_init_balance);
+    assert_eq!(alice_final_balance, alice_init_balance + 100);
     assert_eq!(bob_final_balance, bob_init_balance);
     assert_eq!(carol_final_balance, carol_init_balance);
     assert_eq!(amm_final_balance, 0);

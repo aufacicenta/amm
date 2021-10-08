@@ -1,6 +1,7 @@
 use crate::utils::*;
 use near_sdk::json_types::{U128};
 use near_sdk_sim::{to_yocto};
+use amm::types::{Outcome, AnswerType};
 
 #[test]
 fn swap_calc_buy_amount_test() {
@@ -36,6 +37,7 @@ fn swap_calc_sell_collateral_out_test() {
     assert_eq!(buy_amount, 2111111111111111111111111);
 }
 
+// TODO: make pass
 #[test]
 fn swap_basic_buy_test() {
     let test_utils = TestUtils::init(carol());
@@ -73,6 +75,7 @@ fn swap_basic_buy_test() {
     assert_eq!(expected_target_buyer_balance, target_buyer_balance);
 }
 
+// TODO: make pass
 #[test]
 fn swap_basic_sell_test() {
     let test_utils = TestUtils::init(carol());
@@ -248,6 +251,7 @@ fn redeem_collat_helper(target_price_a: u128, target_price_b: u128, token_value_
 
     let weights = Some(calc_weights_from_price(vec![target_price_a, target_price_b]));
     test_utils.alice.create_market(2, Some(U128(0)));
+    test_utils.alice.create_data_request(market_id);
     test_utils.alice.add_liquidity(market_id, seed_amount, weights);
 
     test_utils.bob.buy(market_id, buy_amount, 0, 0);
@@ -287,6 +291,10 @@ fn redeem_collat_helper(target_price_a: u128, target_price_b: u128, token_value_
 
     test_utils.alice.exit_liquidity(market_id, seed_amount);
 
+    let outcome_to_stake = Outcome::Answer(AnswerType::String(empty_string()));
+    test_utils.carol.stake(0, outcome_to_stake.clone(), 200);
+
+    test_utils.alice.finalize(0);
     test_utils.carol.resolute_market(market_id, None);
     test_utils.bob.claim_earnings(market_id);
     test_utils.alice.claim_earnings(market_id);

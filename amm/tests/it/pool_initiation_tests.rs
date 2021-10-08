@@ -7,9 +7,10 @@ fn pool_initial_state_test() {
     let test_utils = TestUtils::init(carol());
     let oracle = test_utils.oracle_contract;
     
-    // Test that data_request is created at market creation
+    // Test that data_request is created after market creation
     let creation_bond = 100;
     test_utils.alice.create_market(2, Some(U128(0)));
+    test_utils.alice.create_data_request(0);
     let dr_exists: bool = view!(oracle.dr_exists(U64(0))).unwrap_json();
     assert!(dr_exists, "data request was not successfully created");
     
