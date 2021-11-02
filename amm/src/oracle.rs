@@ -64,7 +64,7 @@ impl AMMContract {
         
         let validity_bond: u128 = oracle_config.validity_bond.into();
         let bond_in: u128 = bond_in.into();
-        let market = self.get_market_expect(market_id);
+        let mut market = self.get_market_expect(market_id);
     
         assert_eq!(oracle_config.payment_token, payment_token, "ERR_INVALID_PAYMENT_TOKEN");
         assert!(validity_bond <= bond_in, "ERR_NOT_ENOUGH_BOND: FOUND {}, NEED {}", bond_in, validity_bond);
@@ -82,7 +82,7 @@ impl AMMContract {
         };
     
         let remaining_bond: u128 = bond_in - validity_bond;
-        let create_promise = self.create_data_request(&payment_token, validity_bond, NewDataRequestArgs {
+        let create_promise = self.create_data_request(&payment_token.clone(), validity_bond, NewDataRequestArgs {
             description: Some(format!("{} - {}", market.description, market.extra_info)),
             outcomes,
             tags: Some(vec![market_id.0.to_string()]),
@@ -91,6 +91,11 @@ impl AMMContract {
             data_type,
             creator: sender.to_string(),
         });
+
+        // update market with payment token, creator, and payment to return
+        market.payment_token = Some(payment_token.clone());
+        market.dr_creator = Some(sender.to_string());
+        market.validity_bond = Some(validity_bond);
         
         // Refund the remaining tokens
         if remaining_bond > 0 {

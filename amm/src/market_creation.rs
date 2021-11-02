@@ -86,6 +86,9 @@ impl AMMContract {
             description: payload.description.clone(),
             extra_info: payload.extra_info.clone(),
             sources: payload.sources.clone(),
+            dr_creator: None,
+            payment_token: None,
+            validity_bond: None,
         };
 
         logger::log_create_market(&market, &payload.description, &payload.extra_info, &payload.categories, sender);

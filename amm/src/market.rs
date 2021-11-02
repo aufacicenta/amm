@@ -29,6 +29,9 @@ pub struct Market {
     pub sources: Vec<Source>,
     pub description: String, // Description of market
     pub extra_info: String, // Details that help with market resolution
+    pub payment_token: Option<AccountId>,
+    pub validity_bond: Option<u128>,
+    pub dr_creator: Option<AccountId>,
 }
 
 #[near_bindgen]
@@ -446,6 +449,13 @@ impl AMMContract {
         market.data_request_finalized = true;
         self.markets.replace(market_id, &market);
         logger::log_market_status(&market);
+
+        // forward validity bond to creator
+        fungible_token::fungible_token_transfer(
+            &market.payment_token.unwrap(),
+            market.dr_creator.unwrap(),
+            market.validity_bond.unwrap_or(0),
+        );
     }
 
     /**
