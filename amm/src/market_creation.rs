@@ -86,7 +86,7 @@ impl AMMContract {
     }
 }
 
-
+#[near_bindgen]
 impl AMMContract {
     /**
      * @notice allows users to create new markets, can only be called internally
@@ -126,7 +126,7 @@ impl AMMContract {
 
         logger::log_pool(&pool);
 
-        let market = Market {
+        let mut market = Market {
             end_time: payload.end_time.into(),
             resolution_time: payload.resolution_time.into(),
             pool,
@@ -141,30 +141,11 @@ impl AMMContract {
         logger::log_create_market(&market, &payload.description, &payload.extra_info, &payload.categories);
         logger::log_market_status(&market);
 
+        // Enable Market
+        market.enabled = true;
+        logger::log_market_status(&market);
+
         self.markets.push(&market);
         market_id.into()
-    }
-
-    pub fn ft_create_market_callback(
-        &mut self, 
-        sender: &AccountId, 
-        bond_in: Balance, 
-        payload: CreateMarketArgs
-    ) -> Promise {
-        self.assert_unpaused();
-        let market_id = self.create_market(&payload);
-        oracle::fetch_oracle_config(&self.oracle)
-            .then(
-                ext_self::proceed_datarequest_creation(
-                sender.to_string(), 
-                env::predecessor_account_id(), 
-                U128(bond_in), 
-                market_id,
-                payload, 
-                &env::current_account_id(), 
-                0, 
-                150_000_000_000_000
-            )
-        )
     }
 }

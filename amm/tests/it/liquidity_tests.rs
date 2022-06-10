@@ -8,7 +8,7 @@ fn add_liquidity_even_liq_test() {
     
     // variables
     let market_id = 0;
-    let creation_bond = 100;
+    let creation_bond = to_yocto("0");
 
     let seed_amount = to_yocto("10");
     let half = U128(to_yocto("5") / 10);
