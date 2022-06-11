@@ -41,8 +41,7 @@ pub struct BuyArgs {
 #[derive(Serialize, Deserialize)]
 pub enum Payload {
     BuyArgs(BuyArgs),
-    AddLiquidityArgs(AddLiquidityArgs),
-    CreateMarketArgs(CreateMarketArgs)
+    AddLiquidityArgs(AddLiquidityArgs)
 }
 
 pub trait FungibleTokenReceiver {
@@ -76,8 +75,7 @@ impl FungibleTokenReceiver for AMMContract {
         let payload: Payload = serde_json::from_str(&msg).expect("Failed to parse the payload, invalid `msg` format");
         let res = match payload {
             Payload::BuyArgs(payload) => self.buy(&sender_id, amount, payload), 
-            Payload::AddLiquidityArgs(payload) => self.add_liquidity(&sender_id, amount, payload),
-            Payload::CreateMarketArgs(payload) => self.ft_create_market_callback(&sender_id, amount, payload).into()
+            Payload::AddLiquidityArgs(payload) => self.add_liquidity(&sender_id, amount, payload)
         };
 
         self.use_storage(&sender_id, initial_storage_usage, account.available);

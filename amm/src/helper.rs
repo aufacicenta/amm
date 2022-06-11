@@ -12,7 +12,7 @@ pub fn assert_collateral_token(collateral_token: &AccountId) {
 /**
  * @panics if the caller is not the contract itself (for promises)
  */
-pub fn assert_self() {
+pub fn _assert_self() {
     assert_eq!(
         env::predecessor_account_id(),
         env::current_account_id(),
@@ -30,11 +30,11 @@ pub fn ns_to_ms(ns_timestamp: u64) -> u64 {
 /**
  * @returns a converted timestamp from miliseconds to nanoseconds
  */
-pub fn ms_to_ns(ms_timestamp: u64) -> u64 {
+pub fn _ms_to_ns(ms_timestamp: u64) -> u64 {
     ms_timestamp * 1_000_000
 }
 
-pub fn is_promise_success() -> bool {
+pub fn _is_promise_success() -> bool {
     assert_eq!(
         env::promise_results_count(),
         1,
@@ -43,8 +43,8 @@ pub fn is_promise_success() -> bool {
     matches!(env::promise_result(0), PromiseResult::Successful(_))
 }
 
-pub fn assert_prev_promise_successful() {
-    assert_eq!(is_promise_success(), true, "previous promise failed");
+pub fn _assert_prev_promise_successful() {
+    assert_eq!(_is_promise_success(), true, "previous promise failed");
 }
 
 pub fn clamp_f64(value: f64, min: f64, max: f64) -> f64 {

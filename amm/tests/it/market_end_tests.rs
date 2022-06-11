@@ -64,7 +64,7 @@ fn test_invalid_market_payout() {
     
     // variables
     let market_id = 0;
-    let creation_bond = 100;
+    let creation_bond = to_yocto("0");
     let alice_init_balance: u128 = test_utils.alice.get_token_balance(None);
     let bob_init_balance: u128 = test_utils.bob.get_token_balance(None);
     
@@ -109,7 +109,7 @@ fn payout_lp_no_exit() {
     let test_utils = TestUtils::init(carol());
     
     // variables
-    let creation_bond = 100;
+    let creation_bond = to_yocto("0");
     let market_id = 0;
     let alice_init_balance: u128 = test_utils.alice.get_token_balance(None);
     let bob_init_balance: u128 = test_utils.bob.get_token_balance(None);

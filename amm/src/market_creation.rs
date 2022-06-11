@@ -1,92 +1,6 @@
 use crate::*;
-use near_sdk::{ PromiseResult, serde_json };
-use near_sdk::serde::{ Serialize, Deserialize };
-use crate::oracle::{ DataRequestArgs, DataRequestDataType };
-
-#[ext_contract(ext_self)]
-trait ProtocolResolver {
-    fn proceed_market_enabling(market_id: U64) -> Promise;
-    fn proceed_datarequest_creation(&mut self, sender: AccountId, bond_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise;
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct OracleConfig {
-    pub bond_token: AccountId, // bond token from the oracle config
-    pub validity_bond: U128 // validity bond amount
-}
 
 #[near_bindgen]
-impl AMMContract {
-    pub fn proceed_datarequest_creation(&mut self, sender: AccountId, bond_token: AccountId, bond_in: WrappedBalance, market_id: U64, market_args: CreateMarketArgs) -> Promise {
-        assert_self();
-        assert_prev_promise_successful();
-
-        // Maybe we don't need to check. We could also assume that
-        // the oracle promise handles the validation..
-        let oracle_config = match env::promise_result(0) {
-            PromiseResult::NotReady => unreachable!(),
-            PromiseResult::Successful(value) => {
-                match serde_json::from_slice::<OracleConfig>(&value) {
-                    Ok(value) => value,
-                    Err(_e) => panic!("ERR_INVALID_ORACLE_CONFIG"),
-                }
-            },
-            PromiseResult::Failed => panic!("ERR_FAILED_ORACLE_CONFIG_FETCH"),
-        };
-        
-        let validity_bond: u128 = oracle_config.validity_bond.into();
-        let bond_in: u128 = bond_in.into();
-
-        assert_eq!(oracle_config.bond_token, bond_token, "ERR_INVALID_BOND_TOKEN");
-        assert!(validity_bond <= bond_in, "ERR_NOT_ENOUGH_BOND");
-
-        let outcomes: Option<Vec<String>> = if market_args.is_scalar {
-            None
-        } else {
-            Some(market_args.outcome_tags.clone())
-        };
-
-        let data_type: DataRequestDataType = if market_args.is_scalar {
-            DataRequestDataType::Number
-        } else {
-            DataRequestDataType::String
-        };
-
-        let remaining_bond: u128 = bond_in - validity_bond;
-        let create_promise = self.create_data_request(&bond_token, validity_bond, DataRequestArgs {
-            description: format!("{} - {}", market_args.description, market_args.extra_info),
-            outcomes,
-            settlement_time: ms_to_ns(market_args.resolution_time.into()),
-            tags: vec![market_id.0.to_string()],
-            sources: market_args.sources,
-            challenge_period: market_args.challenge_period,
-            data_type,
-        });
-        
-        // Refund the remaining tokens
-        if remaining_bond > 0 {
-            create_promise
-                .then(fungible_token::fungible_token_transfer(&bond_token, sender, remaining_bond))
-                // We trigger the proceeding last so we can check the promise for failures
-                .then(ext_self::proceed_market_enabling(market_id, &env::current_account_id(), 0, 25_000_000_000_000))
-        } else {
-            create_promise
-                .then(ext_self::proceed_market_enabling(market_id, &env::current_account_id(), 0, 25_000_000_000_000))
-        }
-    }
-
-    pub fn proceed_market_enabling(&mut self, market_id: U64) {
-        assert_self();
-        assert_prev_promise_successful();
-        
-        let mut market = self.get_market_expect(market_id);
-        market.enabled = true;
-        self.markets.replace(market_id.into(), &market);
-        logger::log_market_status(&market);
-    }
-}
-
-
 impl AMMContract {
     /**
      * @notice allows users to create new markets, can only be called internally
@@ -126,7 +40,7 @@ impl AMMContract {
 
         logger::log_pool(&pool);
 
-        let market = Market {
+        let mut market = Market {
             end_time: payload.end_time.into(),
             resolution_time: payload.resolution_time.into(),
             pool,
@@ -141,30 +55,11 @@ impl AMMContract {
         logger::log_create_market(&market, &payload.description, &payload.extra_info, &payload.categories);
         logger::log_market_status(&market);
 
+        // Enable Market
+        market.enabled = true;
+        logger::log_market_status(&market);
+
         self.markets.push(&market);
         market_id.into()
-    }
-
-    pub fn ft_create_market_callback(
-        &mut self, 
-        sender: &AccountId, 
-        bond_in: Balance, 
-        payload: CreateMarketArgs
-    ) -> Promise {
-        self.assert_unpaused();
-        let market_id = self.create_market(&payload);
-        oracle::fetch_oracle_config(&self.oracle)
-            .then(
-                ext_self::proceed_datarequest_creation(
-                sender.to_string(), 
-                env::predecessor_account_id(), 
-                U128(bond_in), 
-                market_id,
-                payload, 
-                &env::current_account_id(), 
-                0, 
-                150_000_000_000_000
-            )
-        )
     }
 }
