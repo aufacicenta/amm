@@ -37,7 +37,7 @@ pub use oracle::callback_args::NewDataRequestArgs;
 extern crate amm;
 pub use amm::*;
 
-type OracleContract = oracle::ContractContract;
+// type OracleContract = oracle::ContractContract;
 type TokenContract = token::TokenContractContract;
 type AMMContract = amm::AMMContractContract;
 

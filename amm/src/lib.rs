@@ -30,9 +30,7 @@ mod resolution_escrow;
 mod market;
 mod gov; 
 pub mod fungible_token_receiver;
-mod oracle;
 mod market_creation;
-mod fungible_token;
 mod storage_manager;
 
 pub mod collateral_whitelist; // pub for integration tests 

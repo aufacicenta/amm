@@ -607,7 +607,7 @@ mod market_basic_tests {
         market.enabled = true;
         contract.markets.replace(0, &market);
 
-        testing_env!(get_context(token(), ms_to_ns(1619882574000)));
+        testing_env!(get_context(token(), 1619882574000 * 1_000_000));
 
         let add_liquidity_args = AddLiquidityArgs {
             market_id,
@@ -985,7 +985,7 @@ mod market_basic_tests {
             add_liquidity_args
         );
 
-        testing_env!(get_context(bob(), ms_to_ns(1619882574000)));
+        testing_env!(get_context(bob(), 1619882574000 * 1_000_000));
 
         contract.resolute_market(
             market_id,
